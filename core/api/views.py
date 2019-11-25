@@ -1,4 +1,5 @@
 import statsapi
+import datetime
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -28,3 +29,16 @@ class PlayerStats(APIView):
         )
         player = player["stats"][0]["stats"]
         return Response(player)
+class scheduler(APIView):
+    permission_classes = [AllowAny]
+    team_id = {
+        "Texas Rangers": 140,
+    }
+    def get(self, request, name, period):## 팀이름 받고 기간을 정해주면 그안에 있는거 다 뽑기
+        nowDate = datetime.datetime.now().strftime('%Y-%m-%d')
+        teamschedule = statsapi.schedule(start_date=nowDate, end_date=period, team=self.team_id[name])
+        dates = []
+        for input in range(0, len(teamschedule)-1):
+            dates.append(teamschedule[input]["summary"])
+        return Response(dates)
+

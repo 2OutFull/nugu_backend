@@ -28,7 +28,9 @@ class PlayerStats(APIView):
         )
         player = player["stats"][0]["stats"]
         return Response(player)
-class scheduler(APIView):
+
+
+class Scheduler(APIView):
     permission_classes = [AllowAny]
     id = {
         "Los Angeles Angels": 108,
@@ -67,12 +69,12 @@ class scheduler(APIView):
         "Seunghwan": 115,
         "Ji-Man": 139,
     }
-    def get(self, request, name, period, period2):## 팀이름 받고 기간을 정해주면 그안에 있는거 다 뽑기
+    def get(self, request, name, start_date, end_date):
+        # 팀이름 받고 기간을 정해주면 그안에 있는거 다 뽑기
         team_schedule = statsapi.schedule(
-            start_date=period, end_date=period2, team=self.id[name]
+            start_date=start_date, end_date=end_date, team=self.id[name]
         )
         dates = []
-        for schedule in range(0, len(team_schedule)-1):
+        for schedule in range(0, len(team_schedule) - 1):
             dates.append(team_schedule[schedule]["summary"])
         return Response(dates)
-

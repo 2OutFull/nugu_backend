@@ -24,7 +24,7 @@ class PlayerStats(APIView):
 
     def get(self, request, name):
         player = statsapi.player_stat_data(
-            self.player_id[name], self.default_group[name], "career"
+            self.player_id[name], self.default_group[name], "season"
         )
         player = player["stats"][0]["stats"]
         return Response(player)
@@ -69,6 +69,7 @@ class Scheduler(APIView):
         "Seunghwan": 115,
         "Ji-Man": 139,
     }
+
     def get(self, request, name, start_date, end_date):
         # 팀이름 받고 기간을 정해주면 그안에 있는거 다 뽑기
         team_schedule = statsapi.schedule(

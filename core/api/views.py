@@ -1,38 +1,9 @@
 import statsapi
+from datetime import datetime, timedelta
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-
-
-class PlayerStats(APIView):
-    permission_classes = [AllowAny]
-
-    player_id = {
-        "Shin-Soo Choo": 425783,
-        "Hyun-Jin Ryu": 547943,
-        "Jung Ho": 628356,
-        "Seunghwan": 493200,
-        "Ji-Man": 596847,
-    }
-    default_group = {
-        "Shin-Soo Choo": "hitting",
-        "Hyun-Jin Ryu": "pitching",
-        "Jung Ho": "fielding",
-        "Seunghwan": "pitching",
-        "Ji-Man": "fielding",
-    }
-
-    def get(self, request, name):
-        player = statsapi.player_stat_data(
-            self.player_id[name], self.default_group[name], "season"
-        )
-        player = player["stats"][0]["stats"]
-        return Response(player)
-
-
-class Scheduler(APIView):
-    permission_classes = [AllowAny]
-    id = {
+id = {
         "Los Angeles Angels": 108,
         "Arizona Diamondbacks": 109,
         "Baltimore Orioles": 110,
@@ -68,14 +39,74 @@ class Scheduler(APIView):
         "Jung Ho": 134,
         "Seunghwan": 115,
         "Ji-Man": 139,
+}
+
+
+class PlayerStats(APIView):
+    permission_classes = [AllowAny]
+
+    player_id = {
+        "Shin-Soo Choo": 425783,
+        "Hyun-Jin Ryu": 547943,
+        "Jung Ho": 628356,
+        "Seunghwan": 493200,
+        "Ji-Man": 596847,
+    }
+    default_group = {
+        "Shin-Soo Choo": "hitting",
+        "Hyun-Jin Ryu": "pitching",
+        "Jung Ho": "fielding",
+        "Seunghwan": "pitching",
+        "Ji-Man": "fielding",
     }
 
-    def get(self, request, name, start_date, end_date):
-        # 팀이름 받고 기간을 정해주면 그안에 있는거 다 뽑기
-        team_schedule = statsapi.schedule(
-            start_date=start_date, end_date=end_date, team=self.id[name]
+    def get(self, request, name):
+        player = statsapi.player_stat_data(
+            self.player_id[name], self.default_group[name], "season"
         )
-        dates = []
+        player = player["stats"][0]["stats"]
+        return Response(player)
+
+class Assigned_Scheduler(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, name, start_date, end_date):
+        team_schedule = statsapi.schedule(
+            start_date=start_date, end_date=end_date, team=id[name]
+        )
+        date_and_team = [[0] * 2 for i in range(len(team_schedule) - 1)]
         for schedule in range(0, len(team_schedule) - 1):
-            dates.append(team_schedule[schedule]["summary"])
-        return Response(dates)
+            date_and_team[schedule][0] = team_schedule[schedule]["game_date"]
+            date_and_team[schedule][1] = team_schedule[schedule]["away_name"]
+        return Response(date_and_team)
+
+class Next_Game(APIView):
+    permission_class = [AllowAny]
+
+    def get(self, request, name):
+        time = datetime.now()
+        date_and_team = []
+        default_start_date = time.strftime("%Y-%m-%d")
+        default_end_date = (time + timedelta(days=365)).strftime("%Y-%m-%d")
+        team_schedule = statsapi.schedule(
+            start_date=default_start_date, end_date=default_end_date, team=id[name]
+        )
+        date_and_team.append(team_schedule[0]['game_date'])
+        date_and_team.append(team_schedule[0]['away_name'])
+        return Response(date_and_team)
+
+class Scheduler(APIView):
+    permission_classes = [AllowAny]
+
+    def get(self, request, name):
+        time = datetime.now()
+        default_start_date = time.strftime("%Y-%m-%d")
+        default_end_date = (time + timedelta(days=90)).strftime("%Y-%m-%d")
+        team_schedule = statsapi.schedule(
+            start_date=default_start_date, end_date=default_end_date, team=id[name]
+        )
+        date_and_team = [[0]*2 for i in range(len(team_schedule)-1)]
+        for schedule in range(0, len(team_schedule) - 1):
+            date_and_team[schedule][0] = team_schedule[schedule]["game_date"]
+            date_and_team[schedule][1] = team_schedule[schedule]["away_name"]
+        return Response(date_and_team)

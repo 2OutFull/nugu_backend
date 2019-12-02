@@ -4,30 +4,50 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
-class PlayerStats(APIView):
+class PitcherStats(APIView):
+    permission_classes = [AllowAny]
+
+    player_id = {
+        "Hyun-Jin Ryu": 547943,
+        "Seunghwan": 493200,
+    }
+    default_group = {
+        "Hyun-Jin Ryu": "pitching",
+        "Seunghwan": "pitching",
+    }
+
+    def post(self, request):
+        print("pitcher stat called!!**")
+        print(request.data)
+        name = request.data["pitcher"]
+        stat = request.data["pitcher_stat"]
+        player_stat = statsapi.player_stat_data(
+            self.player_id[name], self.default_group[name], "season"
+        )["stats"][0]["stats"][stat]
+        return Response(player_stat)
+
+
+class HitterStats(APIView):
     permission_classes = [AllowAny]
 
     player_id = {
         "Shin-Soo Choo": 425783,
-        "Hyun-Jin Ryu": 547943,
         "Jung Ho": 628356,
-        "Seunghwan": 493200,
         "Ji-Man": 596847,
     }
     default_group = {
         "Shin-Soo Choo": "hitting",
-        "Hyun-Jin Ryu": "pitching",
         "Jung Ho": "fielding",
-        "Seunghwan": "pitching",
         "Ji-Man": "fielding",
     }
 
-    def get(self, request, name):
-        player = statsapi.player_stat_data(
+    def post(self, request):
+        name = request.data["hitter"]
+        stat = request.data["hitter_stat"]
+        player_stat = statsapi.player_stat_data(
             self.player_id[name], self.default_group[name], "season"
-        )
-        player = player["stats"][0]["stats"]
-        return Response(player)
+        )["stats"][0]["stats"][stat]
+        return Response(player_stat)
 
 
 class Scheduler(APIView):

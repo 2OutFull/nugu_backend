@@ -70,7 +70,10 @@ class PlayerStats(APIView):
 class Assigned_Scheduler(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, name, start_date, end_date):
+    def post(self, request):
+        start_date = request.data["start_date"]
+        end_date = request.data["end_date"]
+        name = request.data["name"]
         team_schedule = statsapi.schedule(
             start_date=start_date, end_date=end_date, team=id[name]
         )
@@ -83,7 +86,8 @@ class Assigned_Scheduler(APIView):
 class Next_Game(APIView):
     permission_class = [AllowAny]
 
-    def get(self, request, name):
+    def post(self, request):
+        name = request.data["name"]
         time = datetime.now()
         date_and_team = []
         default_start_date = time.strftime("%Y-%m-%d")
@@ -98,7 +102,8 @@ class Next_Game(APIView):
 class Scheduler(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request, name):
+    def post(self, request):
+        name = request.data["name"]
         time = datetime.now()
         default_start_date = time.strftime("%Y-%m-%d")
         default_end_date = (time + timedelta(days=90)).strftime("%Y-%m-%d")

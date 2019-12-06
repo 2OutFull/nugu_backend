@@ -62,12 +62,32 @@ class HitterStats(APIView):
     }
 
     def post(self, request):
-        name = request.data["hitter"]
-        stat = request.data["hitter_stat"]
-        player_stat = statsapi.player_stat_data(
-            self.player_id[name], self.default_group[name], "season"
-        )["stats"][0]["stats"][stat]
-        return Response(player_stat)
+        data = request.data["action"]
+        print(data)
+
+        if data["actionName"] != "hitter-stat":
+            return Response({"message": "invalid request"})
+
+        with open("configure_package/available_hitter_stats.json") as hitter_json:
+            available_hitter_stats = json.load(hitter_json)
+        request_stat = data["parameters"]["hitter_stat"]["value"]
+        hitter = data["parameters"]["hitter"]["value"]
+        hitter_stat = available_hitter_stats[request_stat]
+
+        return_hitter_stat = statsapi.player_stat_data(
+            self.player_id[hitter], self.default_group[hitter], "season"
+        )["stats"][0]["stats"][hitter_stat]
+
+        response_builder = {
+            "version": "2.0",
+            "resultCode": "OK",
+            "output": {
+                "hitter": hitter,
+                "hitter_stat": request_stat,
+                "return_hitter_stat": return_hitter_stat,
+            },
+        }
+        return Response(response_builder)
 
 
 class Scheduler(APIView):

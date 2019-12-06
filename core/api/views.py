@@ -1,3 +1,5 @@
+import json
+
 import statsapi
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
@@ -8,37 +10,55 @@ class PitcherStats(APIView):
     permission_classes = [AllowAny]
 
     player_id = {
-        "Hyun-Jin Ryu": 547943,
-        "Seunghwan": 493200,
+        "류현진": 547943,
+        "오승환": 493200,
     }
     default_group = {
-        "Hyun-Jin Ryu": "pitching",
-        "Seunghwan": "pitching",
+        "류현진": "pitching",
+        "오승환": "pitching",
     }
 
     def post(self, request):
-        print("pitcher stat called!!**")
-        print(request.data)
-        name = request.data["pitcher"]
-        stat = request.data["pitcher_stat"]
-        player_stat = statsapi.player_stat_data(
-            self.player_id[name], self.default_group[name], "season"
-        )["stats"][0]["stats"][stat]
-        return Response(player_stat)
+        data = request.data["action"]
+        print(data)
+
+        if data["actionName"] != "pitcher-stat":
+            return Response({"message": "invalid request"})
+
+        with open("configure_package/available_pitcher_stats.json") as pitcher_json:
+            available_pitcher_stats = json.load(pitcher_json)
+        request_stat = data["parameters"]["pitcher_stat"]["value"]
+        pitcher = data["parameters"]["pitcher"]["value"]
+        pitcher_stat = available_pitcher_stats[request_stat]
+
+        return_pitcher_stat = statsapi.player_stat_data(
+            self.player_id[pitcher], self.default_group[pitcher], "season"
+        )["stats"][0]["stats"][pitcher_stat]
+
+        response_builder = {
+            "version": "2.0",
+            "resultCode": "OK",
+            "output": {
+                "pitcher": pitcher,
+                "pitcher_stat": request_stat,
+                "return_pitcher_stat": return_pitcher_stat,
+            },
+        }
+        return Response(response_builder)
 
 
 class HitterStats(APIView):
     permission_classes = [AllowAny]
 
     player_id = {
-        "Shin-Soo Choo": 425783,
-        "Jung Ho": 628356,
-        "Ji-Man": 596847,
+        "추신수": 425783,
+        "강정호": 628356,
+        "최지만": 596847,
     }
     default_group = {
-        "Shin-Soo Choo": "hitting",
-        "Jung Ho": "fielding",
-        "Ji-Man": "fielding",
+        "추신수": "hitting",
+        "강정호": "fielding",
+        "최지만": "fielding",
     }
 
     def post(self, request):

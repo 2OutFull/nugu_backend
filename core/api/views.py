@@ -20,7 +20,6 @@ class PitcherStats(APIView):
 
     def post(self, request):
         data = request.data["action"]
-        print(data)
 
         if data["actionName"] != "pitcher-stat":
             return Response({"message": "invalid request"})
@@ -63,7 +62,6 @@ class HitterStats(APIView):
 
     def post(self, request):
         data = request.data["action"]
-        print(data)
 
         if data["actionName"] != "hitter-stat":
             return Response({"message": "invalid request"})

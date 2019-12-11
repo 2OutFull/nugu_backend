@@ -125,7 +125,7 @@ class Next_Game(APIView):
 
     def post(self, request):
         data = request.data["action"]
-        if data["actionName"] != "next_scheduler":
+        if data["actionName"] != "nextgame":
             return Response({"message": "invalid request"})
         with open("configure_package/available_schedule.json") as schedule:
             available_schedule = json.load(schedule)

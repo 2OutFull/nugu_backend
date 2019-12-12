@@ -158,17 +158,18 @@ class Scheduler(APIView):
             }
 
         return Response(response_builder)
-class League_Schedule():
+
+
+class League_Schedule:
     permission_classes = [AllowAny]
+
     def post(self, request):
         data = request.data["action"]
         request_league = data["parameters"]["league_name"]["value"]
         with open("configure_package/available_league.json") as league_id:
             league_list = json.load(league_id)
         league_id = league_list(request_league)
-        other_league_schedule_url = (
-            f"https://www.thesportsdb.com/api/v1/json/1/eventsnextleague.php?id={league_id}"
-        )
+        other_league_schedule_url = f"https://www.thesportsdb.com/api/v1/json/1/eventsnextleague.php?id={league_id}"
         r = requests.get(other_league_schedule_url).text
         three_events = json.loads(r)["events"][2:5]
         response_builder = {
@@ -185,4 +186,3 @@ class League_Schedule():
             },
         }
         return Response(response_builder)
-

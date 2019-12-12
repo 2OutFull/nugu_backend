@@ -175,13 +175,13 @@ class League_Schedule():
             "version": "2.0",
             "resultCode": "OK",
             "output": {
-                "our_team_name": request_league,
-                "return_game_date1": three_events[-1]["dateEvent"],
-                "return_home_name1": three_events[-1]["strHomeTeam"],
-                "return_away_name1": three_events[-1]["strAwayTeam"],
-                "return_game_date2": three_events[-2]["dateEvent"],
-                "return_home_name2": three_events[-2]["strHomeTeam"],
-                "return_away_name2": three_events[-2]["strAwayTeam"],
+                "our_league_name": request_league,
+                "return_league_date1": three_events[-1]["dateEvent"],
+                "return_homename1": three_events[-1]["strHomeTeam"],
+                "return_awayname1": three_events[-1]["strAwayTeam"],
+                "return_league_date2": three_events[-2]["dateEvent"],
+                "return_homename2": three_events[-2]["strHomeTeam"],
+                "return_awayname2": three_events[-2]["strAwayTeam"],
             },
         }
         return Response(response_builder)

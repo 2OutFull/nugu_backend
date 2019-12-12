@@ -102,8 +102,8 @@ class Scheduler(APIView):
 
         with open("configure_package/available_schedule.json") as schedule:
             available_schedule = json.load(schedule)
-        request_team_id = data["parameters"]["team"]["value"]
-        team_id = available_schedule[request_team_id]
+        request_team = data["parameters"]["team_name"]["value"]
+        team_id = available_schedule[request_team]
         time = datetime.now()
         default_start_date = time.strftime("%Y-%m-%d")
         default_end_date = (time + timedelta(days=90)).strftime("%Y-%m-%d")
@@ -118,7 +118,7 @@ class Scheduler(APIView):
             "version": "2.0",
             "resultCode": "OK",
             "output": {
-                "our_team": request_team_id,
+                "our_team_name": request_team,
                 "return_game_date1": date_and_team[0][0],
                 "return_away_name1": date_and_team[0][1],
                 "return_game_date2": date_and_team[1][0],

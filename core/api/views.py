@@ -1,7 +1,7 @@
 import json
+from datetime import datetime, timedelta
 
 import statsapi
-from datetime import datetime, timedelta
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -21,9 +21,6 @@ class PitcherStats(APIView):
 
     def post(self, request):
         data = request.data["action"]
-
-        if data["actionName"] != "pitcher-stat":
-            return Response({"message": "invalid request"})
 
         with open("configure_package/available_pitcher_stats.json") as pitcher_json:
             available_pitcher_stats = json.load(pitcher_json)
@@ -64,9 +61,6 @@ class HitterStats(APIView):
     def post(self, request):
         data = request.data["action"]
 
-        if data["actionName"] != "hitter-stat":
-            return Response({"message": "invalid request"})
-
         with open("configure_package/available_hitter_stats.json") as hitter_json:
             available_hitter_stats = json.load(hitter_json)
         request_stat = data["parameters"]["hitter_stat"]["value"]
@@ -88,13 +82,13 @@ class HitterStats(APIView):
         }
         return Response(response_builder)
 
+
 class NextGame(APIView):
     permission_class = [AllowAny]
 
     def post(self, request):
         data = request.data["action"]
-        if data["actionName"] != "nextgame":
-            return Response({"message": "invalid request"})
+
         with open("configure_package/available_schedule.json") as schedule:
             available_schedule = json.load(schedule)
         request_team_id = data["parameters"]["teams"]["value"]
@@ -106,8 +100,8 @@ class NextGame(APIView):
         team_schedule = statsapi.schedule(
             start_date=default_start_date, end_date=default_end_date, team=team_id
         )
-        date_and_team.append(team_schedule[0]['game_date'])
-        date_and_team.append(team_schedule[0]['away_name'])
+        date_and_team.append(team_schedule[0]["game_date"])
+        date_and_team.append(team_schedule[0]["away_name"])
         response_builder = {
             "version": "2.0",
             "resultCode": "OK",
@@ -119,13 +113,13 @@ class NextGame(APIView):
         }
         return Response(response_builder)
 
+
 class Scheduler(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
         data = request.data["action"]
-        if data["actionName"] != "scheduler":
-            return Response({"message": "invalid request"})
+
         with open("configure_package/available_schedule.json") as schedule:
             available_schedule = json.load(schedule)
         request_team_id = data["parameters"]["teams"]["value"]
@@ -136,7 +130,7 @@ class Scheduler(APIView):
         team_schedule = statsapi.schedule(
             start_date=default_start_date, end_date=default_end_date, team=team_id
         )
-        date_and_team = [[0]*2 for i in range(len(team_schedule)-1)]
+        date_and_team = [[0] * 2 for i in range(len(team_schedule) - 1)]
         for schedule in range(0, 3):
             date_and_team[schedule][0] = team_schedule[schedule]["game_date"]
             date_and_team[schedule][1] = team_schedule[schedule]["away_name"]

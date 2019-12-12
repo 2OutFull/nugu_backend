@@ -88,39 +88,7 @@ class HitterStats(APIView):
         }
         return Response(response_builder)
 
-
-class Assigned_Scheduler(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        data = request.data["action"]
-        if data["actionName"] != "assigned_scheduler":
-            return Response({"message": "invalid request"})
-        with open("configure_package/available_schedule.json") as schedule:
-            available_schedule = json.load(schedule)
-        request_start_date = data["parameters"]["start_date"]["value"]
-        request_end_date = data["parameters"]["end_date"]["value"]
-        request_team_id = data["parameters"]["teams"]["value"]
-        team_id = available_schedule[request_team_id]
-        team_schedule = statsapi.schedule(
-            start_date=request_start_date, end_date=request_end_date, team=team_id
-        )
-        date_and_team = [[0] * 2 for i in range(len(team_schedule) - 1)]
-        for schedule in range(0, len(team_schedule) - 1):
-            date_and_team[schedule][0] = team_schedule[schedule]["game_date"]
-            date_and_team[schedule][1] = team_schedule[schedule]["away_name"]
-        response_builder = {
-            "version": "2.0",
-            "resultCode": "OK",
-            "output": {
-                "our_team": request_team_id,
-                "return_game_date": date_and_team[schedule],
-                "return_away_name": date_and_team[schedule][0],
-            },
-        }
-        return Response(response_builder)
-
-class Next_Game(APIView):
+class NextGame(APIView):
     permission_class = [AllowAny]
 
     def post(self, request):
@@ -177,8 +145,12 @@ class Scheduler(APIView):
             "resultCode": "OK",
             "output": {
                 "our_team": request_team_id,
-                "return_game_date": date_and_team,
-                "return_away_name": date_and_team,
+                "return_game_date1": date_and_team[0][0],
+                "return_away_name1": date_and_team[0][1],
+                "return_game_date2": date_and_team[1][0],
+                "return_away_name2": date_and_team[1][1],
+                "return_game_date3": date_and_team[2][0],
+                "return_away_name3": date_and_team[2][1]
             },
         }
         return Response(response_builder)

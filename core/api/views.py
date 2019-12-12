@@ -137,7 +137,7 @@ class Scheduler(APIView):
             start_date=default_start_date, end_date=default_end_date, team=team_id
         )
         date_and_team = [[0]*2 for i in range(len(team_schedule)-1)]
-        for schedule in range(0, len(team_schedule) - 1):
+        for schedule in range(0, 3):
             date_and_team[schedule][0] = team_schedule[schedule]["game_date"]
             date_and_team[schedule][1] = team_schedule[schedule]["away_name"]
         response_builder = {
@@ -150,7 +150,7 @@ class Scheduler(APIView):
                 "return_game_date2": date_and_team[1][0],
                 "return_away_name2": date_and_team[1][1],
                 "return_game_date3": date_and_team[2][0],
-                "return_away_name3": date_and_team[2][1]
+                "return_away_name3": date_and_team[2][1],
             },
         }
         return Response(response_builder)

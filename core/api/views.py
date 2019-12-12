@@ -99,11 +99,17 @@ class Scheduler(APIView):
 
     def post(self, request):
         data = request.data["action"]
+        request_team = data["parameters"]["team"]["value"]
 
-        with open("configure_package/available_schedule.json") as schedule:
-            available_schedule = json.load(schedule)
-        request_team_id = data["parameters"]["team"]["value"]
-        team_id = available_schedule[request_team_id]
+        with open("configure_package/mlb_team_list.json") as mlb_team:
+            mlb_team_list = json.load(mlb_team)
+        if request_team in mlb_team_list:
+            team_id = mlb_team_list[request_team]
+        else:
+            with open("configure_package/team_and_teamid.json") as other_team:
+                other_team_list = json.load(other_team)
+            team_id = other_team_list[request_team]
+
         time = datetime.now()
         default_start_date = time.strftime("%Y-%m-%d")
         default_end_date = (time + timedelta(days=90)).strftime("%Y-%m-%d")
@@ -118,7 +124,7 @@ class Scheduler(APIView):
             "version": "2.0",
             "resultCode": "OK",
             "output": {
-                "our_team": request_team_id,
+                "our_team": request_team,
                 "return_game_date1": date_and_team[0][0],
                 "return_away_name1": date_and_team[0][1],
                 "return_game_date2": date_and_team[1][0],

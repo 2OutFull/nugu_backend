@@ -67,10 +67,10 @@ class NextGame(APIView):
 
     def post(self, request):
         data = request.data["action"]
-        with open("configure_package/available_schedule.json") as schedule:
-            available_schedule = json.load(schedule)
+        with open("configure_package/mlb_team_list.json") as schedule:
+            mlb_team_list = json.load(schedule)
         request_team = data["parameters"]["team"]["value"]
-        team_id = available_schedule[request_team]
+        team_id = mlb_team_list[request_team]
 
         time = datetime.now()
         date_and_team = []
@@ -82,13 +82,17 @@ class NextGame(APIView):
         )
         date_and_team.append(team_schedule[0]["game_date"])
         date_and_team.append(team_schedule[0]["away_name"])
+
+        with open("configure_package/mlb_i18n_team_list.json") as mlb_i18n_team:
+            away_team_list = json.load(mlb_i18n_team)
+
         response_builder = {
             "version": "2.0",
             "resultCode": "OK",
             "output": {
                 "our_team": request_team,
                 "return_game_date": date_and_team[0],
-                "return_away_name": date_and_team[1],
+                "return_away_name": away_team_list[date_and_team[1]],
             },
         }
         return Response(response_builder)
@@ -160,7 +164,7 @@ class Scheduler(APIView):
         return Response(response_builder)
 
 
-class League_Schedule:
+class LeagueSchedule(APIView):
     permission_classes = [AllowAny]
 
     def post(self, request):
@@ -168,10 +172,10 @@ class League_Schedule:
         request_league = data["parameters"]["league_name"]["value"]
         with open("configure_package/available_league.json") as league_id:
             league_list = json.load(league_id)
-        league_id = league_list(request_league)
+        league_id = league_list[request_league]
         other_league_schedule_url = f"https://www.thesportsdb.com/api/v1/json/1/eventsnextleague.php?id={league_id}"
         r = requests.get(other_league_schedule_url).text
-        three_events = json.loads(r)["events"][2:5]
+        three_events = json.loads(r)["events"][3:5]
         response_builder = {
             "version": "2.0",
             "resultCode": "OK",

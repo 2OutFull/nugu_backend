@@ -1,6 +1,5 @@
 import json
 from datetime import datetime, timedelta
-from pprint import pprint
 
 import statsapi
 from rest_framework.permissions import AllowAny
@@ -8,52 +7,19 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 
-class PitcherStats(APIView):
+class PlayerStats(APIView):
     permission_classes = [AllowAny]
 
     player_id = {
         "류현진": 547943,
         "오승환": 493200,
-    }
-    default_group = {
-        "류현진": "pitching",
-        "오승환": "pitching",
-    }
-
-    def post(self, request):
-        data = request.data["action"]
-
-        with open("configure_package/available_pitcher_stats.json") as pitcher_json:
-            available_pitcher_stats = json.load(pitcher_json)
-        request_stat = data["parameters"]["pitcher_stat"]["value"]
-        pitcher = data["parameters"]["pitcher"]["value"]
-        pitcher_stat = available_pitcher_stats[request_stat]
-
-        return_pitcher_stat = statsapi.player_stat_data(
-            self.player_id[pitcher], self.default_group[pitcher], "season"
-        )["stats"][0]["stats"][pitcher_stat]
-
-        response_builder = {
-            "version": "2.0",
-            "resultCode": "OK",
-            "output": {
-                "pitcher": pitcher,
-                "pitcher_stat": request_stat,
-                "return_pitcher_stat": return_pitcher_stat,
-            },
-        }
-        return Response(response_builder)
-
-
-class HitterStats(APIView):
-    permission_classes = [AllowAny]
-
-    player_id = {
         "추신수": 425783,
         "강정호": 628356,
         "최지만": 596847,
     }
     default_group = {
+        "류현진": "pitching",
+        "오승환": "pitching",
         "추신수": "hitting",
         "강정호": "fielding",
         "최지만": "fielding",
@@ -62,23 +28,34 @@ class HitterStats(APIView):
     def post(self, request):
         data = request.data["action"]
 
-        with open("configure_package/available_hitter_stats.json") as hitter_json:
-            available_hitter_stats = json.load(hitter_json)
-        request_stat = data["parameters"]["hitter_stat"]["value"]
-        hitter = data["parameters"]["hitter"]["value"]
-        hitter_stat = available_hitter_stats[request_stat]
+        last_url = request.get_full_path().split("/")[-1]
+        if last_url == "pitcher-stat":
+            position = "pitcher"
+        else:
+            position = "hitter"
 
-        return_hitter_stat = statsapi.player_stat_data(
-            self.player_id[hitter], self.default_group[hitter], "season"
-        )["stats"][0]["stats"][hitter_stat]
+        with open(f"configure_package/available_{position}_stats.json") as pitcher_json:
+            available_pitcher_stats = json.load(pitcher_json)
+        request_stat = data["parameters"][f"{position}_stat"]["value"]
+        player = data["parameters"][position]["value"]
+
+        player_stat = available_pitcher_stats[request_stat]
+
+        return_stat = statsapi.player_stat_data(
+            self.player_id[player], self.default_group[player], "season"
+        )["stats"][0]["stats"][player_stat]
+        if type(return_stat) is str:
+            return_stat = float(return_stat)
+        else:
+            return_stat = str(return_stat) + "회"
 
         response_builder = {
             "version": "2.0",
             "resultCode": "OK",
             "output": {
-                "hitter": hitter,
-                "hitter_stat": request_stat,
-                "return_hitter_stat": return_hitter_stat,
+                "pitcher": player,
+                "pitcher_stat": request_stat,
+                "return_pitcher_stat": return_stat,
             },
         }
         return Response(response_builder)
@@ -103,8 +80,6 @@ class NextGame(APIView):
         team_schedule = statsapi.schedule(
             start_date=default_start_date, end_date=default_end_date, team=team_id
         )
-        pprint(team_schedule)
-
         date_and_team.append(team_schedule[0]["game_date"])
         date_and_team.append(team_schedule[0]["away_name"])
         response_builder = {

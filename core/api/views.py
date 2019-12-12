@@ -67,7 +67,6 @@ class NextGame(APIView):
 
     def post(self, request):
         data = request.data["action"]
-
         with open("configure_package/available_schedule.json") as schedule:
             available_schedule = json.load(schedule)
         request_team = data["parameters"]["team"]["value"]
@@ -106,7 +105,6 @@ class Scheduler(APIView):
             mlb_team_list = json.load(mlb_team)
         if request_team in mlb_team_list:
             team_id = mlb_team_list[request_team]
-
             time = datetime.now()
             default_start_date = time.strftime("%Y-%m-%d")
             default_end_date = (time + timedelta(days=90)).strftime("%Y-%m-%d")
@@ -160,3 +158,31 @@ class Scheduler(APIView):
             }
 
         return Response(response_builder)
+class League_Schedule():
+    permission_classes = [AllowAny]
+    def post(self, request):
+        data = request.data["action"]
+        request_league = data["parameters"]["league_name"]["value"]
+        with open("configure_package/available_league.json") as league_id:
+            league_list = json.load(league_id)
+        league_id = league_list(request_league)
+        other_league_schedule_url = (
+            f"https://www.thesportsdb.com/api/v1/json/1/eventsnextleague.php?id={league_id}"
+        )
+        r = requests.get(other_league_schedule_url).text
+        three_events = json.loads(r)["events"][2:5]
+        response_builder = {
+            "version": "2.0",
+            "resultCode": "OK",
+            "output": {
+                "our_team_name": request_league,
+                "return_game_date1": three_events[-1]["dateEvent"],
+                "return_home_name1": three_events[-1]["strHomeTeam"],
+                "return_away_name1": three_events[-1]["strAwayTeam"],
+                "return_game_date2": three_events[-2]["dateEvent"],
+                "return_home_name2": three_events[-2]["strHomeTeam"],
+                "return_away_name2": three_events[-2]["strAwayTeam"],
+            },
+        }
+        return Response(response_builder)
+

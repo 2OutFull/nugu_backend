@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from pprint import pprint
 
 import statsapi
 from rest_framework.permissions import AllowAny
@@ -91,22 +92,26 @@ class NextGame(APIView):
 
         with open("configure_package/available_schedule.json") as schedule:
             available_schedule = json.load(schedule)
-        request_team_id = data["parameters"]["teams"]["value"]
-        team_id = available_schedule[request_team_id]
+        request_team = data["parameters"]["team"]["value"]
+        team_id = available_schedule[request_team]
+
         time = datetime.now()
         date_and_team = []
         default_start_date = time.strftime("%Y-%m-%d")
         default_end_date = (time + timedelta(days=365)).strftime("%Y-%m-%d")
+
         team_schedule = statsapi.schedule(
             start_date=default_start_date, end_date=default_end_date, team=team_id
         )
+        pprint(team_schedule)
+
         date_and_team.append(team_schedule[0]["game_date"])
         date_and_team.append(team_schedule[0]["away_name"])
         response_builder = {
             "version": "2.0",
             "resultCode": "OK",
             "output": {
-                "our_team": request_team_id,
+                "our_team": request_team,
                 "return_game_date": date_and_team[0],
                 "return_away_name": date_and_team[1],
             },
@@ -122,7 +127,7 @@ class Scheduler(APIView):
 
         with open("configure_package/available_schedule.json") as schedule:
             available_schedule = json.load(schedule)
-        request_team_id = data["parameters"]["teams"]["value"]
+        request_team_id = data["parameters"]["team"]["value"]
         team_id = available_schedule[request_team_id]
         time = datetime.now()
         default_start_date = time.strftime("%Y-%m-%d")

@@ -1,6 +1,6 @@
 from django.urls import path
 
-from core.api.views import PitcherStats, HitterStats, Scheduler, NextGame,
+from core.api.views import PitcherStats, HitterStats, Scheduler, NextGame
 
 urlpatterns = [
     path("pitcher-stat", PitcherStats.as_view()),

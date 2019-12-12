@@ -1,5 +1,6 @@
 import json
 from datetime import datetime, timedelta
+from pprint import pprint
 
 import requests
 import statsapi
@@ -50,15 +51,26 @@ class PlayerStats(APIView):
         else:
             return_stat = str(return_stat) + "회"
 
-        response_builder = {
-            "version": "2.0",
-            "resultCode": "OK",
-            "output": {
-                "pitcher": player,
-                "pitcher_stat": request_stat,
-                "return_pitcher_stat": return_stat,
-            },
-        }
+        if position == "pitcher":
+            response_builder = {
+                "version": "2.0",
+                "resultCode": "OK",
+                "output": {
+                    "pitcher": player,
+                    "pitcher_stat": request_stat,
+                    "return_pitcher_stat": return_stat,
+                },
+            }
+        else:
+            response_builder = {
+                "version": "2.0",
+                "resultCode": "OK",
+                "output": {
+                    "hitter": player,
+                    "hitter_stat": request_stat,
+                    "return_hitter_stat": return_stat,
+                },
+            }
         return Response(response_builder)
 
 
@@ -146,18 +158,43 @@ class Scheduler(APIView):
             )
             r = requests.get(other_team_schedule_url).text
             three_events = json.loads(r)["events"][2:5]
+            pprint(three_events)
+            with open("configure_package/team_and_teamid_kor_eng.json") as kor_eng_json:
+                kor_eng_team_list = json.load(kor_eng_json)
+            with open("configure_package/team_and_teamid_eng_kor.json") as eng_kor_json:
+                eng_kor_team_list = json.load(eng_kor_json)
+            request_team_eng = kor_eng_team_list[request_team]
+
+            return_away_name1 = (
+                three_events[0]["strHomeTeam"]
+                if three_events[0]["strHomeTeam"] != request_team_eng
+                else three_events[0]["strAwayTeam"]
+            )
+            return_away_name1 = eng_kor_team_list[return_away_name1]
+            return_away_name2 = (
+                three_events[1]["strHomeTeam"]
+                if three_events[1]["strHomeTeam"] != request_team_eng
+                else three_events[1]["strAwayTeam"]
+            )
+            return_away_name2 = eng_kor_team_list[return_away_name2]
+            return_away_name3 = (
+                three_events[2]["strHomeTeam"]
+                if three_events[2]["strHomeTeam"] != request_team_eng
+                else three_events[2]["strAwayTeam"]
+            )
+            return_away_name3 = eng_kor_team_list[return_away_name3]
 
             response_builder = {
                 "version": "2.0",
                 "resultCode": "OK",
                 "output": {
                     "our_team_name": request_team,
-                    "return_game_date1": three_events[-1]["dateEvent"],
-                    "return_away_name1": three_events[-1]["strAwayTeam"],
-                    "return_game_date2": three_events[-2]["dateEvent"],
-                    "return_away_name2": three_events[-2]["strAwayTeam"],
-                    "return_game_date3": three_events[0]["dateEvent"],
-                    "return_away_name3": three_events[0]["strAwayTeam"],
+                    "return_game_date1": three_events[0]["dateEvent"],
+                    "return_away_name1": return_away_name1,
+                    "return_game_date2": three_events[1]["dateEvent"],
+                    "return_away_name2": return_away_name2,
+                    "return_game_date3": three_events[2]["dateEvent"],
+                    "return_away_name3": return_away_name3,
                 },
             }
 
